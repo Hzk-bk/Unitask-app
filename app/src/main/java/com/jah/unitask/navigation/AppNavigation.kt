@@ -7,6 +7,7 @@ import androidx.navigation.compose.rememberNavController
 import com.jah.unitask.auth.FirebaseAuthManager
 import com.jah.unitask.screens.LoginScreen
 import com.jah.unitask.screens.RegisterScreen
+import com.jah.unitask.screens.TaskListScreen
 
 @Composable
 fun AppNavigation() {
@@ -28,7 +29,7 @@ fun AppNavigation() {
                         email = email,
                         password = password,
                         onSuccess = {
-                            println("LOGIN SUCCESS")
+                            navController.navigate(Screen.Tasks.route)
                         },
                         onFailure = {
                             println(it)
@@ -50,7 +51,7 @@ fun AppNavigation() {
                         email = email,
                         password = password,
                         onSuccess = {
-                            navController.navigate(Screen.Login.route)
+                            navController.navigate(Screen.Tasks.route)
                         },
                         onFailure = {
                             println(it)
@@ -61,6 +62,12 @@ fun AppNavigation() {
                     navController.popBackStack()
                 }
             )
+        }
+
+        composable(Screen.Tasks.route) {
+
+            TaskListScreen()
+
         }
     }
 }
