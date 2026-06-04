@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.jah.unitask.data.Task
 import com.jah.unitask.data.TaskRepository
+import androidx.compose.material3.OutlinedButton
 
 @Composable
 fun TaskListScreen(
@@ -93,6 +94,33 @@ fun TaskListScreen(
                             Text(
                                 text = "Status: ${task.status}"
                             )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            OutlinedButton(
+                                onClick = {
+
+                                    repository.deleteTask(
+                                        taskId = task.id,
+                                        onSuccess = {
+
+                                            repository.getTasks(
+                                                onSuccess = {
+                                                    tasks = it
+                                                },
+                                                onFailure = {
+
+                                                }
+                                            )
+                                        },
+                                        onFailure = {
+
+                                        }
+                                    )
+                                }
+                            ) {
+                                Text("Delete")
+                            }
                         }
                     }
                 }

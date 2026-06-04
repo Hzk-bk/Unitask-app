@@ -35,8 +35,16 @@ class TaskRepository {
             .get()
             .addOnSuccessListener { result ->
 
-                val tasks = result.documents.mapNotNull {
-                    it.toObject(Task::class.java)
+                val tasks = result.documents.map { document ->
+
+                    Task(
+                        id = document.id,
+                        title = document.getString("title") ?: "",
+                        description = document.getString("description") ?: "",
+                        deadline = document.getString("deadline") ?: "",
+                        status = document.getString("status") ?: "Open",
+                        userId = document.getString("userId") ?: ""
+                    )
                 }
 
                 onSuccess(tasks)
@@ -45,4 +53,39 @@ class TaskRepository {
                 onFailure(it.message ?: "Failed to load tasks")
             }
     }
+
+    fun updateTask(
+        task: Task,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+
+        tasksCollection
+            .document(task.id)
+            .set(task)
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener {
+                onFailure(it.message ?: "Failed to update task")
+            }
+    }
+
+    fun deleteTask(
+        taskId: String,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+
+        tasksCollection
+            .document(taskId)
+            .delete()
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener {
+                onFailure(it.message ?: "Failed to delete task")
+            }
+    }
+
 }
