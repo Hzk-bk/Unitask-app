@@ -25,4 +25,24 @@ class TaskRepository {
                 onFailure(it.message ?: "Failed to add task")
             }
     }
+
+    fun getTasks(
+        onSuccess: (List<Task>) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+
+        tasksCollection
+            .get()
+            .addOnSuccessListener { result ->
+
+                val tasks = result.documents.mapNotNull {
+                    it.toObject(Task::class.java)
+                }
+
+                onSuccess(tasks)
+            }
+            .addOnFailureListener {
+                onFailure(it.message ?: "Failed to load tasks")
+            }
+    }
 }
