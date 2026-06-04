@@ -12,6 +12,12 @@ import com.jah.unitask.data.Task
 import com.jah.unitask.data.TaskRepository
 import com.jah.unitask.screens.AddTaskScreen
 import android.util.Log
+import com.jah.unitask.screens.EditTaskScreen
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+
 
 @Composable
 fun AppNavigation() {
@@ -19,6 +25,10 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val authManager = FirebaseAuthManager()
     val taskRepository = TaskRepository()
+    var selectedTask by remember {
+        mutableStateOf<Task?>(null)
+    }
+
 
     NavHost(
         navController = navController,
@@ -98,8 +108,51 @@ fun AppNavigation() {
             TaskListScreen(
                 onAddTaskClick = {
                     navController.navigate(Screen.AddTask.route)
+                },
+                onEditTaskClick = { task ->
+
+                    selectedTask = task
+
+                    navController.navigate(Screen.EditTask.route)
+
                 }
             )
+        }
+
+        composable(Screen.EditTask.route) {
+
+            selectedTask?.let { task ->
+
+                EditTaskScreen(
+                    currentTitle = task.title,
+                    currentDescription = task.description,
+                    currentDeadline = task.deadline,
+
+                    onUpdateTask = { title, description, deadline ->
+
+                        val updatedTask = task.copy(
+                            title = title,
+                            description = description,
+                            deadline = deadline
+                        )
+
+                        taskRepository.updateTask(
+                            task = updatedTask,
+                            onSuccess = {
+                                navController.popBackStack()
+                            },
+                            onFailure = {
+                                Log.e("UPDATE_ERROR", it)
+                            }
+                        )
+                    },
+
+                    onCancel = {
+                        navController.popBackStack()
+                    }
+                )
+
+            }
         }
 
         }

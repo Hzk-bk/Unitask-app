@@ -14,8 +14,11 @@ fun EditTaskScreen(
     currentTitle: String,
     currentDescription: String,
     currentDeadline: String,
-    onUpdateTask: (String, String, String) -> Unit
-) {
+    onUpdateTask: (String, String, String) -> Unit,
+    onCancel: () -> Unit
+)
+
+ {
 
     var title by remember { mutableStateOf(currentTitle) }
     var description by remember { mutableStateOf(currentDescription) }
@@ -68,6 +71,14 @@ fun EditTaskScreen(
             }
         ) {
             Text("Update Task")
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Button(
+            onClick = onCancel
+        ) {
+            Text("Back")
         }
     }
 }

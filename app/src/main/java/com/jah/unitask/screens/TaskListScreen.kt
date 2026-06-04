@@ -16,8 +16,10 @@ import androidx.compose.material3.OutlinedButton
 
 @Composable
 fun TaskListScreen(
-    onAddTaskClick: () -> Unit
-) {
+    onAddTaskClick: () -> Unit,
+    onEditTaskClick: (Task) -> Unit
+)
+  {
 
     val repository = TaskRepository()
 
@@ -94,6 +96,16 @@ fun TaskListScreen(
                             Text(
                                 text = "Status: ${task.status}"
                             )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            OutlinedButton(
+                                onClick = {
+                                    onEditTaskClick(task)
+                                }
+                            ) {
+                                Text("Edit")
+                            }
 
                             Spacer(modifier = Modifier.height(8.dp))
 
