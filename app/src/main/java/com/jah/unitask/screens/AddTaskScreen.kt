@@ -2,9 +2,9 @@ package com.jah.unitask.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,6 +17,8 @@ fun AddTaskScreen(
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var deadline by remember { mutableStateOf("") }
+
+    var errorMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -53,15 +55,44 @@ fun AddTaskScreen(
             label = { Text("Deadline") }
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (errorMessage.isNotEmpty()) {
+
+            Text(
+                text = errorMessage,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
 
         Button(
             onClick = {
-                onSaveTask(
-                    title,
-                    description,
-                    deadline
-                )
+
+                when {
+                    title.isBlank() -> {
+                        errorMessage = "Task title cannot be empty"
+                    }
+
+                    description.isBlank() -> {
+                        errorMessage = "Description cannot be empty"
+                    }
+
+                    deadline.isBlank() -> {
+                        errorMessage = "Deadline cannot be empty"
+                    }
+
+                    else -> {
+                        errorMessage = ""
+
+                        onSaveTask(
+                            title,
+                            description,
+                            deadline
+                        )
+                    }
+                }
             }
         ) {
             Text("Save Task")

@@ -17,6 +17,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+
 
 
 @Composable
@@ -25,14 +28,21 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val authManager = FirebaseAuthManager()
     val taskRepository = TaskRepository()
+    val context = LocalContext.current
     var selectedTask by remember {
         mutableStateOf<Task?>(null)
     }
 
 
+    val startDestination = if (authManager.isUserLoggedIn()) {
+        Screen.Tasks.route
+    } else {
+        Screen.Login.route
+    }
+
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = startDestination
     ) {
 
         composable(Screen.Login.route) {
@@ -47,7 +57,13 @@ fun AppNavigation() {
                             navController.navigate(Screen.Tasks.route)
                         },
                         onFailure = {
-                            println(it)
+
+                            Toast.makeText(
+                                context,
+                                "Invalid email or password",
+                                Toast.LENGTH_SHORT
+                            ).show()
+
                         }
                     )
                 },
@@ -69,7 +85,13 @@ fun AppNavigation() {
                             navController.navigate(Screen.Tasks.route)
                         },
                         onFailure = {
-                            println(it)
+
+                            Toast.makeText(
+                                context,
+                                it,
+                                Toast.LENGTH_SHORT
+                            ).show()
+
                         }
                     )
                 },
@@ -114,7 +136,14 @@ fun AppNavigation() {
                     selectedTask = task
 
                     navController.navigate(Screen.EditTask.route)
+                },
+                onLogoutClick = {
 
+                    authManager.logout()
+
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0)
+                    }
                 }
             )
         }

@@ -13,11 +13,14 @@ import androidx.compose.ui.unit.dp
 import com.jah.unitask.data.Task
 import com.jah.unitask.data.TaskRepository
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.OutlinedButton
 
 @Composable
 fun TaskListScreen(
     onAddTaskClick: () -> Unit,
-    onEditTaskClick: (Task) -> Unit
+    onEditTaskClick: (Task) -> Unit,
+    onLogoutClick: () -> Unit
 )
   {
 
@@ -45,10 +48,23 @@ fun TaskListScreen(
             .padding(24.dp)
     ) {
 
-        Text(
-            text = "My Tasks",
-            style = MaterialTheme.typography.headlineMedium
-        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+
+            Text(
+                text = "My Tasks",
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            OutlinedButton(
+                onClick = onLogoutClick
+            ) {
+                Text("Logout")
+            }
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -96,6 +112,45 @@ fun TaskListScreen(
                             Text(
                                 text = "Status: ${task.status}"
                             )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            OutlinedButton(
+                                onClick = {
+
+                                    val updatedTask = task.copy(
+                                        status = if (task.status == "Open")
+                                            "Completed"
+                                        else
+                                            "Open"
+                                    )
+
+                                    repository.updateTask(
+                                        task = updatedTask,
+                                        onSuccess = {
+
+                                            repository.getTasks(
+                                                onSuccess = {
+                                                    tasks = it
+                                                },
+                                                onFailure = {
+
+                                                }
+                                            )
+                                        },
+                                        onFailure = {
+
+                                        }
+                                    )
+                                }
+                            ) {
+                                Text(
+                                    if (task.status == "Open")
+                                        "Mark Completed"
+                                    else
+                                        "Mark Open"
+                                )
+                            }
 
                             Spacer(modifier = Modifier.height(8.dp))
 
