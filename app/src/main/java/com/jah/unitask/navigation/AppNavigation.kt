@@ -19,6 +19,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
+import com.jah.unitask.screens.SplashScreen
+import com.jah.unitask.screens.WelcomeScreen
+import com.jah.unitask.screens.StatisticsScreen
+import androidx.compose.runtime.LaunchedEffect
+import com.jah.unitask.screens.NotificationsScreen
+import com.jah.unitask.data.NotificationRepository
 
 
 
@@ -33,18 +39,66 @@ fun AppNavigation() {
         mutableStateOf<Task?>(null)
     }
 
+    val startDestination = Screen.Splash.route
+    val notificationRepository = NotificationRepository()
 
-    val startDestination = if (authManager.isUserLoggedIn()) {
-        Screen.Tasks.route
-    } else {
-        Screen.Login.route
+    var unreadNotifications by remember {
+        mutableStateOf(0)
     }
+
+    LaunchedEffect(Unit) {
+
+        notificationRepository.getNotifications(
+            onSuccess = { notifications ->
+
+                unreadNotifications =
+                    notifications.count {
+                        !it.read
+                    }
+            },
+            onFailure = {}
+        )
+    }
+
 
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
 
+        composable(Screen.Splash.route) {
+
+            SplashScreen(
+
+                onSplashFinished = {
+
+                    if (authManager.isUserLoggedIn()) {
+
+                        navController.navigate(Screen.Tasks.route) {
+                            popUpTo(Screen.Splash.route) {
+                                inclusive = true
+                            }
+                        }
+
+                    } else {
+
+                        navController.navigate(Screen.Welcome.route) {
+                            popUpTo(Screen.Splash.route) {
+                                inclusive = true
+                            }
+                        }
+                    }
+                }
+            )
+        }
+        composable(Screen.Welcome.route) {
+
+            WelcomeScreen(
+                onGetStartedClick = {
+                    navController.navigate(Screen.Login.route)
+                }
+            )
+        }
         composable(Screen.Login.route) {
 
             LoginScreen(
@@ -118,12 +172,19 @@ fun AppNavigation() {
                             navController.popBackStack()
                         },
                         onFailure = {
-                            android.util.Log.e("FIRESTORE_ERROR", it)
+                            Log.e("FIRESTORE_ERROR", it)
                         }
                     )
+                },
+
+                onBackClick = {
+                    navController.popBackStack()
                 }
             )
+
         }
+
+
 
         composable(Screen.Tasks.route) {
 
@@ -131,12 +192,17 @@ fun AppNavigation() {
                 onAddTaskClick = {
                     navController.navigate(Screen.AddTask.route)
                 },
+
                 onEditTaskClick = { task ->
 
                     selectedTask = task
 
                     navController.navigate(Screen.EditTask.route)
                 },
+                onStatisticsClick = {
+                    navController.navigate(Screen.Statistics.route)
+                },
+
                 onLogoutClick = {
 
                     authManager.logout()
@@ -144,10 +210,22 @@ fun AppNavigation() {
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0)
                     }
-                }
+                },
+                        onNotificationsClick = {
+                    navController.navigate(Screen.Notifications.route)
+                },
+                unreadNotifications = unreadNotifications
             )
         }
 
+        composable(Screen.Notifications.route) {
+
+            NotificationsScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
         composable(Screen.EditTask.route) {
 
             selectedTask?.let { task ->
@@ -180,9 +258,40 @@ fun AppNavigation() {
                         navController.popBackStack()
                     }
                 )
-
             }
         }
 
+        composable(Screen.Statistics.route) {
+
+            val repository = TaskRepository()
+
+            var tasks by remember {
+                mutableStateOf<List<Task>>(emptyList())
+            }
+
+            LaunchedEffect(Unit) {
+
+                repository.getTasks(
+                    onSuccess = {
+                        tasks = it
+                    },
+                    onFailure = {}
+                )
+            }
+
+            StatisticsScreen(
+                totalTasks = tasks.size,
+                openTasks = tasks.count { it.status == "Open" },
+                completedTasks = tasks.count { it.status == "Completed" },
+
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
+
+
+        }
+
     }
+

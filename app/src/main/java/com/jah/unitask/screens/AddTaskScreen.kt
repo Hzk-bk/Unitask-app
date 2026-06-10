@@ -8,17 +8,38 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.OutlinedButton
+import android.app.DatePickerDialog
+import androidx.compose.ui.platform.LocalContext
+import java.util.Calendar
 
 @Composable
 fun AddTaskScreen(
-    onSaveTask: (String, String, String) -> Unit
-) {
+    onSaveTask: (String, String, String) -> Unit,
+    onBackClick: () -> Unit
+){
 
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var deadline by remember { mutableStateOf("") }
 
     var errorMessage by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+
+    val calendar = Calendar.getInstance()
+
+    val datePickerDialog = DatePickerDialog(
+        context,
+        { _, year, month, dayOfMonth ->
+
+            deadline = "$dayOfMonth/${month + 1}/$year"
+
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
 
     Column(
         modifier = Modifier
@@ -31,7 +52,17 @@ fun AddTaskScreen(
             style = MaterialTheme.typography.headlineMedium
         )
 
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedButton(
+            onClick = onBackClick
+        ) {
+            Text("Back")
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(16.dp))
+
 
         OutlinedTextField(
             value = title,
@@ -49,11 +80,18 @@ fun AddTaskScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedTextField(
-            value = deadline,
-            onValueChange = { deadline = it },
-            label = { Text("Deadline") }
-        )
+        OutlinedButton(
+            onClick = {
+                datePickerDialog.show()
+            }
+        ) {
+            Text(
+                if (deadline.isBlank())
+                    "Select Deadline"
+                else
+                    deadline
+            )
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 
